@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Navratri Flappy Challenge | Siddhantha Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@500;600&family=Yatra+One&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#120d45;--ink2:#1d1560;--gold:#f0bf4c;--mari:#f28c28;--rose:#d81b60;--cream:#fff4dc;--font-d:'Yatra One',Georgia,serif;--font-b:'Hind',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--ink);color:var(--cream);font-family:var(--font-b);font-size:17px;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(120% 70% at 50% 0%,#3b1458 0%,var(--ink) 60%);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:16px;background:radial-gradient(circle at 8px 8px,var(--mari) 5px,transparent 6px) 0 0/16px 16px repeat-x;z-index:5}
+[hidden]{display:none!important}
+.screen{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px 20px 28px}
+.card{width:100%;max-width:420px;text-align:center}
+.logo{width:132px;height:132px;border-radius:50%;box-shadow:0 0 0 3px var(--gold),0 0 40px rgba(240,191,76,.35)}
+h1{font-family:var(--font-d);font-weight:400;font-size:2.15rem;line-height:1.1;margin:18px 0 6px;color:var(--gold)}
+.by{opacity:.85;margin-bottom:16px}
+.prize{border:1.5px solid var(--gold);border-radius:14px;padding:12px 14px;background:rgba(240,191,76,.09);margin-bottom:18px;line-height:1.4}
+.prize b{color:var(--gold);font-weight:600}
+.prize .upto{font-size:.8rem;opacity:.85;line-height:1}
+.prize .cash{font-family:var(--font-d);font-size:2.6rem;line-height:1.1;color:var(--gold);font-weight:400}
+.prize .alt{font-size:.95rem;margin-top:2px}
+.prize .note{font-size:.88rem;opacity:.85;margin-top:8px;line-height:1.4}
+label{display:block;text-align:left;font-weight:600;margin:12px 0 5px}
+input{width:100%;font:inherit;font-size:1.05rem;padding:13px 14px;border-radius:10px;border:1.5px solid #5a4a9a;background:#1a1257;color:var(--cream)}
+input::placeholder{color:#9c93c9}
+:focus-visible{outline:3px solid var(--mari);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+.go{width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:linear-gradient(180deg,#ffd36a,var(--mari));color:#2a1200;font-family:var(--font-d);font-size:1.35rem;box-shadow:0 4px 0 #a85a0f}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 #a85a0f}
+.go:disabled{opacity:.6}
+.err{color:#ff8a9d;min-height:1.4em;margin-top:10px;font-weight:600}
+.rules{margin-top:14px;font-size:.92rem;opacity:.8;line-height:1.5}
+#game{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#07041f}
+canvas{height:min(100dvh,calc(100vw*5/3));aspect-ratio:3/5;max-width:100vw;touch-action:none;display:block}
+.mute{position:fixed;top:26px;right:12px;width:42px;height:42px;border-radius:50%;border:1.5px solid var(--gold);background:rgba(18,13,69,.7);color:var(--gold);font-size:1.15rem;z-index:6}
+#result{position:fixed;inset:0;overflow:auto;z-index:8;background:radial-gradient(120% 70% at 50% 0%,#3b1458 0%,var(--ink) 65%)}
+.score{font-family:var(--font-d);font-size:5.5rem;line-height:1;color:var(--gold);margin-top:6px}
+.verdict{font-family:var(--font-d);font-size:1.7rem;line-height:1.2;margin:8px 0 18px}
+.small{font-size:.9rem;opacity:.8;margin-top:14px;line-height:1.5}
+.stat{margin-top:10px;font-size:.88rem;min-height:1.3em;opacity:.85}
+</style>
+</head>
+<body>
+
+<section id="entry" class="screen">
+  <div class="card">
+    <img class="logo" src="logo.png" alt="Siddhantha Academy logo">
+    <h1>Navratri Flappy Challenge</h1>
+    <p class="by">Presented by Siddhantha Academy, Gandhinagar</p>
+    <div class="prize">
+      <div class="upto">Up to</div>
+      <div class="cash"><b>&#8377;5,000</b> cash</div>
+      <div class="alt">or <b>75% off</b> on admission</div>
+      <div class="note">Score the highest to win. The top scorer gets a call from Siddhantha Academy.</div>
+    </div>
+    <label for="nm">Your name</label>
+    <input id="nm" autocomplete="name" maxlength="40" placeholder="Full name">
+    <label for="ph">Mobile number</label>
+    <input id="ph" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="10-digit mobile number">
+    <div class="err" id="err" role="alert"></div>
+    <button class="go" id="start">Start Game</button>
+    <p class="rules">One attempt per mobile number. The game ends the moment you crash, so give it your best.</p>
+  </div>
+</section>
+
+<section id="game" hidden>
+  <canvas id="cv" width="360" height="600"></canvas>
+  <button class="mute" id="mute" aria-label="Toggle sound">&#128266;</button>
+</section>
+
+<section id="result" class="screen" hidden>
+  <div class="card">
+    <img class="logo" src="logo.png" alt="Siddhantha Academy logo" style="width:96px;height:96px">
+    <p class="by" style="margin-top:14px" id="whoLine"></p>
+    <div class="score" id="finalScore">0</div>
+    <p class="by">your score</p>
+    <p class="verdict" id="verdict"></p>
+    <div class="prize">
+      <div class="upto">Highest score wins up to</div>
+      <div class="cash"><b>&#8377;5,000</b> cash</div>
+      <div class="alt">or <b>75% off</b> on admission</div>
+      <div class="note">If yours is the highest, Siddhantha Academy will <b>definitely call you</b> on the number you entered.</div>
+    </div>
+    <p class="stat" id="saveStat"></p>
+    <p class="small">One attempt per mobile number, so this number can't play again.<br>
+    Siddhantha Academy, Keshav Aaradhyam, Kudasan, Gandhinagar<br>Phone: 099044 32121</p>
+  </div>
+</section>
+
+<script>
+/* ===== CONFIG ===== */
+const CONFIG = {
+  SCRIPT_URL: "",              // paste your Google Apps Script Web App URL here
+  GAP: 158,                    // gap between pillars (smaller = harder)
+  VERDICTS: [                  // [minimum score, line]
+    [0,  "That was a very short garba."],
+    [2,  "Warm-up round done."],
+    [6,  "You played well."],
+    [11, "Close enough."],
+    [18, "One of the highest scores."],
+    [28, "Dangerously good. Keep your phone nearby."]
+  ]
+};
+
+/* ===== SCREENS & BACKEND ===== */
+const $ = id => document.getElementById(id);
+let player = {name:"", phone:"", token:""};
+
+async function api(params){
+  if(!CONFIG.SCRIPT_URL) return {ok:true, token:"demo", demo:true};
+  const r = await fetch(CONFIG.SCRIPT_URL + "?" + new URLSearchParams(params));
+  return r.json();
+}
+const played = () => { try{ return JSON.parse(localStorage.getItem("sa_played")||"[]"); }catch(e){ return []; } };
+const markPlayed = p => { try{ const a=played(); a.push(p); localStorage.setItem("sa_played", JSON.stringify(a)); }catch(e){} };
+
+$("ph").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g,"").slice(0,10));
+
+$("start").addEventListener("click", async () => {
+  const name = $("nm").value.trim(), phone = $("ph").value.trim(), err = $("err");
+  err.textContent = "";
+  if(name.length < 2){ err.textContent = "Please enter your name."; return; }
+  if(!/^[6-9]\d{9}$/.test(phone)){ err.textContent = "Enter a valid 10-digit mobile number."; return; }
+  if(played().includes(phone)){ err.textContent = "This mobile number has already played."; return; }
+  const btn = $("start"); btn.disabled = true; btn.textContent = "Checking...";
+  try{
+    const res = await api({action:"start", name, phone});
+    if(!res.ok){ err.textContent = res.msg || "This mobile number has already played."; markPlayed(phone); btn.disabled=false; btn.textContent="Start Game"; return; }
+    player = {name, phone, token:res.token};
+    markPlayed(phone);
+    $("entry").hidden = true; $("game").hidden = false;
+    initAudio(); resetGame();
+  }catch(e){
+    err.textContent = "Could not connect. Check your internet and try again.";
+    btn.disabled = false; btn.textContent = "Start Game";
+  }
+});
+
+async function saveScore(score, keepalive){
+  try{
+    const res = await api({action:"score", token:player.token, phone:player.phone, score});
+    return !!res.ok;
+  }catch(e){ return false; }
+}
+
+function showResult(score){
+  const line = [...CONFIG.VERDICTS].reverse().find(v => score >= v[0])[1];
+  $("whoLine").textContent = player.name;
+  $("finalScore").textContent = score;
+  $("verdict").textContent = line;
+  $("game").hidden = true; $("result").hidden = false;
+  $("saveStat").textContent = "Saving your score...";
+  saveScore(score).then(ok => ok ? true : saveScore(score)).then(ok => {
+    $("saveStat").textContent = ok ? "Your score has been recorded." :
+      "We couldn't record your score. Take a screenshot of this page and show it to Siddhantha Academy.";
+  });
+}
+
+window.addEventListener("pagehide", () => {
+  if(state === "play" && CONFIG.SCRIPT_URL){
+    fetch(CONFIG.SCRIPT_URL + "?" + new URLSearchParams({action:"score", token:player.token, phone:player.phone, score}), {keepalive:true}).catch(()=>{});
+  }
+});
+
+/* ===== AUDIO ===== */
+let ac = null, muted = false;
+function initAudio(){ try{ ac = ac || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+function beep(f, d, type, vol){
+  if(!ac || muted) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type||"sine"; o.frequency.setValueAtTime(f, ac.currentTime);
+  o.frequency.exponentialRampToValueAtTime(f*0.6, ac.currentTime+d);
+  g.gain.setValueAtTime(vol||0.12, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+d);
+  o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime+d);
+}
+$("mute").addEventListener("click", e => { muted = !muted; e.target.innerHTML = muted ? "&#128263;" : "&#128266;"; });
+
+/* ===== GAME ===== */
+const cv = $("cv"), ctx = cv.getContext("2d");
+const W = 360, H = 600, GROUND = 548, PW = 60, GAP = CONFIG.GAP, BX = 92;
+const NAV = ["#e53935","#2f6bff","#fdd835","#43a047","#fb8c00","#00acc1","#ec407a","#eceff1","#8d8aa8"]; // nine Navratri colours
+let state = "ready", bird, pipes, score, frame, last, groundX, dead;
+const stars = Array.from({length:46}, (_,i) => ({x:(i*97)%W, y:(i*53)%330+24, r:(i%3)*0.5+0.7, p:i}));
+
+function resetGame(){
+  bird = {y:270, v:0}; pipes = []; score = 0; frame = 0; groundX = 0; dead = false; state = "ready";
+  last = performance.now(); requestAnimationFrame(loop);
+}
+function flap(){
+  if(state === "ready"){ state = "play"; }
+  if(state === "play"){ bird.v = -7.1; beep(620, 0.12, "triangle"); }
+}
+cv.addEventListener("pointerdown", e => { e.preventDefault(); initAudio(); flap(); });
+window.addEventListener("keydown", e => { if(e.code === "Space" || e.code === "ArrowUp"){ e.preventDefault(); flap(); } });
+
+function die(){
+  if(dead) return; dead = true; state = "over";
+  beep(180, 0.45, "sawtooth", 0.15);
+  setTimeout(() => showResult(score), 900);
+}
+
+function update(dt){
+  if(state === "ready"){ bird.y = 270 + Math.sin(frame*0.08)*8; return; }
+  if(state !== "play") { bird.v += 0.5*dt; bird.y = Math.min(bird.y + bird.v*dt, GROUND-14); return; }
+  const speed = 2.5 + Math.min(score, 30)*0.015;
+  bird.v = Math.min(bird.v + 0.42*dt, 9); bird.y += bird.v*dt;
+  if(bird.y < 14){ bird.y = 14; bird.v = 0; }
+  groundX = (groundX + speed*dt) % 36;
+  if(!pipes.length || pipes[pipes.length-1].x < W - 190){
+    pipes.push({x:W+10, top:70 + Math.random()*(GROUND - GAP - 140), passed:false, c:Math.floor(score/4) % NAV.length});
+  }
+  for(const p of pipes){
+    p.x -= speed*dt;
+    if(!p.passed && p.x + PW < BX){ p.passed = true; score++; beep(880, 0.15, "square", 0.07); }
+    const r = 11;
+    if(BX+r > p.x && BX-r < p.x+PW && (bird.y-r < p.top || bird.y+r > p.top+GAP)) die();
+  }
+  pipes = pipes.filter(p => p.x > -PW-10);
+  if(bird.y + 14 >= GROUND) die();
+}
+
+function pillar(x, y, h, col, capAtBottom){
+  const g = ctx.createLinearGradient(x, 0, x+PW, 0);
+  g.addColorStop(0, "#2a1a52"); g.addColorStop(0.45, col); g.addColorStop(1, "#2a1a52");
+  ctx.fillStyle = g; ctx.fillRect(x, y, PW, h);
+  ctx.strokeStyle = "rgba(0,0,0,.25)"; ctx.lineWidth = 2;
+  for(let i=1;i<5;i++){ ctx.beginPath(); ctx.moveTo(x+i*PW/5, y); ctx.lineTo(x+i*PW/5, y+h); ctx.stroke(); }
+  const cy = capAtBottom ? y+h-20 : y;
+  ctx.fillStyle = "#f0bf4c"; ctx.fillRect(x-5, cy, PW+10, 20);
+  ctx.fillStyle = "#b8862a"; ctx.fillRect(x-5, capAtBottom ? cy : cy+16, PW+10, 4);
+  ctx.fillStyle = "#d81b60"; for(let i=0;i<4;i++){ ctx.beginPath(); ctx.arc(x+8+i*15, cy+9, 3, 0, 7); ctx.fill(); }
+}
+
+function drawBird(){
+  ctx.save(); ctx.translate(BX, bird.y);
+  ctx.rotate(Math.max(-0.5, Math.min(1.2, bird.v*0.07)));
+  ctx.fillStyle = "#d81b60"; ctx.beginPath(); ctx.moveTo(-14,0); ctx.lineTo(-30,-7); ctx.lineTo(-27,0); ctx.lineTo(-30,8); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#ff9f1c"; ctx.beginPath(); ctx.ellipse(0,0,17,13,0,0,7); ctx.fill();
+  const w = state==="play" ? Math.sin(frame*0.5)*0.7 : 0.2;
+  ctx.save(); ctx.translate(-3,3); ctx.rotate(w); ctx.fillStyle = "#7b1fa2"; ctx.beginPath(); ctx.ellipse(-4,0,11,6,0,0,7); ctx.fill(); ctx.restore();
+  ctx.strokeStyle = "#f0bf4c"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(6,-12); ctx.lineTo(4,-19); ctx.moveTo(10,-11); ctx.lineTo(11,-18); ctx.stroke();
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(8,-4,4.5,0,7); ctx.fill();
+  ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(9.5,-4,2,0,7); ctx.fill();
+  ctx.fillStyle = "#e53935"; ctx.beginPath(); ctx.moveTo(14,-3); ctx.lineTo(25,2); ctx.lineTo(14,6); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawScene(){
+  const sky = ctx.createLinearGradient(0,0,0,GROUND);
+  sky.addColorStop(0,"#0b0838"); sky.addColorStop(0.6,"#3b1458"); sky.addColorStop(1,"#b23a62");
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+  for(const s of stars){ ctx.globalAlpha = 0.5 + 0.5*Math.sin(frame*0.04 + s.p); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  const mg = ctx.createRadialGradient(285,115,8,285,115,70); mg.addColorStop(0,"rgba(255,236,170,.55)"); mg.addColorStop(1,"rgba(255,236,170,0)");
+  ctx.fillStyle = mg; ctx.fillRect(200,30,170,170);
+  ctx.fillStyle = "#fff0b8"; ctx.beginPath(); ctx.arc(285,115,27,0,7); ctx.fill();
+  ctx.fillStyle = "#1c0f3d";
+  [[30,70,90],[140,52,70],[250,64,100]].forEach(([x,w,h]) => {
+    ctx.fillRect(x, GROUND-h*0.5, w, h*0.5);
+    ctx.beginPath(); ctx.moveTo(x+8, GROUND-h*0.5); ctx.lineTo(x+w/2, GROUND-h); ctx.lineTo(x+w-8, GROUND-h*0.5); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+w/2, GROUND-h-4, 4, 0, 7); ctx.fill();
+  });
+}
+
+function drawFront(){
+  ctx.fillStyle = "#24103a"; ctx.fillRect(0, GROUND, W, H-GROUND);
+  ctx.fillStyle = "#f0bf4c"; ctx.fillRect(0, GROUND, W, 4);
+  for(let x = -groundX + 18; x < W+36; x += 36){
+    ctx.fillStyle = "#c2571a"; ctx.beginPath(); ctx.ellipse(x, GROUND+22, 10, 6, 0, 0, Math.PI); ctx.fill();
+    const f = 7 + Math.sin(frame*0.3 + x)*1.5;
+    ctx.fillStyle = "#ffd36a"; ctx.beginPath(); ctx.ellipse(x, GROUND+17, 3.2, f*0.7, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = "#fff6d0"; ctx.beginPath(); ctx.ellipse(x, GROUND+18, 1.5, 3, 0, 0, 7); ctx.fill();
+  }
+  for(let x = 6; x < W; x += 13){
+    const y = 8 + 16*Math.pow(Math.sin(x/60*Math.PI), 2);
+    ctx.fillStyle = (x/13|0)%2 ? "#f28c28" : "#ffc233"; ctx.beginPath(); ctx.arc(x, y+8, 6, 0, 7); ctx.fill();
+  }
+}
+
+function draw(){
+  drawScene();
+  for(const p of pipes){
+    const col = NAV[p.c];
+    pillar(p.x, 0, p.top, col, true);
+    pillar(p.x, p.top+GAP, GROUND-p.top-GAP, col, false);
+  }
+  drawFront(); drawBird();
+  ctx.textAlign = "center"; ctx.lineJoin = "round";
+  if(state !== "ready"){
+    ctx.font = "56px 'Yatra One', Georgia, serif"; ctx.lineWidth = 7; ctx.strokeStyle = "#2a1255"; ctx.fillStyle = "#f0bf4c";
+    ctx.strokeText(score, W/2, 98); ctx.fillText(score, W/2, 98);
+  } else {
+    ctx.font = "26px 'Yatra One', Georgia, serif"; ctx.lineWidth = 5; ctx.strokeStyle = "#2a1255"; ctx.fillStyle = "#fff4dc";
+    ctx.globalAlpha = 0.65 + 0.35*Math.sin(frame*0.1);
+    ctx.strokeText("Tap to flap", W/2, 380); ctx.fillText("Tap to flap", W/2, 380);
+    ctx.globalAlpha = 1; ctx.font = "16px Hind, sans-serif"; ctx.lineWidth = 4;
+    ctx.strokeText("Highest score wins the reward", W/2, 410); ctx.fillText("Highest score wins the reward", W/2, 410);
+  }
+}
+
+function loop(t){
+  const dt = Math.min(2.5, (t - last)/16.667); last = t; frame++;
+  update(dt); draw();
+  if(!$("game").hidden) requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
